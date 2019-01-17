@@ -1,0 +1,20 @@
+# github.com/fogleman/gg v1.2.0
+github.com/fogleman/gg
+# github.com/go-sql-driver/mysql v1.4.0
+github.com/go-sql-driver/mysql
+# github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+github.com/golang/freetype/raster
+github.com/golang/freetype/truetype
+# github.com/j4/gosm v0.0.0-20141123101329-8f3e37d8629e
+github.com/j4/gosm
+# github.com/jmoiron/sqlx v1.2.0
+github.com/jmoiron/sqlx
+github.com/jmoiron/sqlx/reflectx
+# golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81
+golang.org/x/image/draw
+golang.org/x/image/font
+golang.org/x/image/font/basicfont
+golang.org/x/image/math/f64
+golang.org/x/image/math/fixed
+# google.golang.org/appengine v1.4.0
+google.golang.org/appengine/cloudsql
