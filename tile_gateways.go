@@ -65,7 +65,7 @@ func drawPerGatewayTiles(x int, y int, z int, entries []types.MysqlAggGridcell) 
 	images := make(map[string]*gg.Context)
 
 	for _, entry := range points {
-		minRadius := 3.0
+		minRadius := 16.0
 		nominalRadius := math.Max(minRadius, pixelsPer19Tile)
 
 		pixelX := float64(entry.X-tileNW19.X) * pixelsPer19Tile
