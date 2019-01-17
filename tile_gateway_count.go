@@ -36,7 +36,7 @@ func drawGatewayCountTile(x int, y int, z int, entries []types.MysqlAggGridcell)
 
 	for x, _ := range points {
 		for y, _ := range points[x] {
-			minRadius := 3.0
+			minRadius := 16.0
 			nominalRadius := math.Max(minRadius, pixelsPer19Tile)
 
 			pixelX := float64(x-tileNW19.X) * pixelsPer19Tile
