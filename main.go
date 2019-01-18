@@ -143,13 +143,16 @@ func main() {
 
 		log.Printf("Generating tile for %d/%d/%d", z, x, y)
 
-		tileNW := gosm.NewTileWithXY(x, y, z)
-		tileSE := gosm.NewTileWithXY(x+1, y+1, z)
+		// Select data for 9 tile to cover att boundary cases
+		tileNWpad := gosm.NewTileWithXY(x-1, y-1, z)
+		tileSEpad := gosm.NewTileWithXY(x+2, y+2, z)
 
-		// For the tileNW we need to reprocess, find all z-19 tiles that falls inside it, plus a little more around the edge
-		tileNW19 := gosm.NewTileWithLatLong(tileNW.Lat, tileNW.Long, 19)
-		tileSE19 := gosm.NewTileWithLatLong(tileSE.Lat, tileSE.Long, 19)
-		aggCoords := map[string]interface{}{"xNw": tileNW19.X - 1, "yNw": tileNW19.Y - 1, "xSe": tileSE19.X + 1, "ySe": tileSE19.Y + 1}
+		// For the tileNW we need to reprocess, find all z-19 tiles that falls inside it
+		tileNW19 := gosm.NewTileWithLatLong(tileNWpad.Lat, tileNWpad.Long, 19)
+		tileSE19 := gosm.NewTileWithLatLong(tileSEpad.Lat, tileSEpad.Long, 19)
+
+		// Query
+		aggCoords := map[string]interface{}{"xNw": tileNW19.X, "yNw": tileNW19.Y, "xSe": tileSE19.X, "ySe": tileSE19.Y}
 
 		var entries = []types.MysqlAggGridcell{}
 		rows, err := stmtSelectAggData.Queryx(aggCoords)
