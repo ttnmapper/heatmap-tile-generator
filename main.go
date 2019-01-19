@@ -26,9 +26,10 @@ type Configuration struct {
 
 	PromethuesPort string
 
-	SleepDuration string // time to sleep between database calls when there was nothing found to process
-	MinZoomLevel  int
-	MaxZoomLevel  int
+	SleepDuration    string // time to sleep between database calls when there was nothing found to process
+	LastQueuedWindow int
+	MinZoomLevel     int
+	MaxZoomLevel     int
 }
 
 var myConfiguration = Configuration{
@@ -45,9 +46,10 @@ var myConfiguration = Configuration{
 
 	PromethuesPort: "2114",
 
-	SleepDuration: "10s",
-	MinZoomLevel:  1,
-	MaxZoomLevel:  18,
+	SleepDuration:    "10s",
+	LastQueuedWindow: 1,
+	MinZoomLevel:     1,
+	MaxZoomLevel:     18,
 }
 
 func main() {
@@ -112,7 +114,8 @@ func main() {
 		tilesToReprocess := []types.MysqlTileToRedraw{}
 		// Give a one minute buffer time
 		err = db.Select(&tilesToReprocess,
-			"SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) AND z>? AND z<? ORDER BY last_queued ASC LIMIT 1",
+			"SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL ? SECOND) AND z>? AND z<? ORDER BY last_queued ASC LIMIT 1",
+			myConfiguration.LastQueuedWindow,
 			myConfiguration.MinZoomLevel,
 			myConfiguration.MaxZoomLevel)
 		if err != nil {
@@ -145,9 +148,9 @@ func main() {
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
 		// Road offset example: http://dev.ttnmapper.org/tms/fog_of_war/12/2104/1350.png
 
-		x = 2104
-		y = 1350
-		z = 12
+		//x = 2104
+		//y = 1350
+		//z = 12
 
 		//divisionFactor := 3
 		//x /= int(math.Pow(2, float64(divisionFactor)))
