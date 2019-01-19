@@ -1,7 +1,7 @@
 module ttnmapper-heatmap-tile-generator
 
 require (
-	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966
+	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 // indirect
 	github.com/disintegration/imaging v1.5.0
 	github.com/fogleman/gg v1.2.0
 	github.com/go-sql-driver/mysql v1.4.0
