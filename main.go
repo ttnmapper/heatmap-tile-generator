@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
@@ -8,6 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log"
 	"os"
+	"runtime"
+	"strconv"
 	"time"
 	"ttnmapper-heatmap-tile-generator/types"
 )
@@ -26,10 +29,11 @@ type Configuration struct {
 
 	PromethuesPort string
 
-	SleepDuration    string // time to sleep between database calls when there was nothing found to process
-	LastQueuedWindow int
-	MinZoomLevel     int
-	MaxZoomLevel     int
+	SleepDuration     string // time to sleep between database calls when there was nothing found to process
+	LastQueuedWindow  int
+	MinZoomLevel      int
+	MaxZoomLevel      int
+	FileWriterThreads int
 }
 
 var myConfiguration = Configuration{
@@ -46,10 +50,11 @@ var myConfiguration = Configuration{
 
 	PromethuesPort: "2114",
 
-	SleepDuration:    "10s",
-	LastQueuedWindow: 1,
-	MinZoomLevel:     1,
-	MaxZoomLevel:     18,
+	SleepDuration:     "10s",
+	LastQueuedWindow:  1,
+	MinZoomLevel:      1,
+	MaxZoomLevel:      18,
+	FileWriterThreads: 4,
 }
 
 func main() {
@@ -70,8 +75,10 @@ func main() {
 	}
 	log.Printf("Using configuration: %+v", myConfiguration) // output: [UserA, UserB]
 
-	// Start a thread to handle slow PNG encoding and file writing
-	go listenForFilesToWrite()
+	// Start threads to handle slow PNG encoding and file writing
+	for i := 0; i < myConfiguration.FileWriterThreads; i++ {
+		go listenForFilesToWrite()
+	}
 
 	// Set up db connection
 	db, err := sqlx.Open("mysql", myConfiguration.MysqlUser+":"+myConfiguration.MysqlPassword+"@tcp("+myConfiguration.MysqlHost+":"+myConfiguration.MysqlPort+")/"+myConfiguration.MysqlDatabase+"?parseTime=true")
@@ -148,9 +155,9 @@ func main() {
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
 		// Road offset example: http://dev.ttnmapper.org/tms/fog_of_war/12/2104/1350.png
 
-		//x = 2104
-		//y = 1350
-		//z = 12
+		x = 2104
+		y = 1350
+		z = 12
 
 		//divisionFactor := 3
 		//x /= int(math.Pow(2, float64(divisionFactor)))
@@ -221,4 +228,13 @@ func CreateDirIfNotExist(dir string) {
 			panic(err)
 		}
 	}
+}
+
+func getGID() uint64 {
+	b := make([]byte, 64)
+	b = b[:runtime.Stack(b, false)]
+	b = bytes.TrimPrefix(b, []byte("goroutine "))
+	b = b[:bytes.IndexByte(b, ' ')]
+	n, _ := strconv.ParseUint(string(b), 10, 64)
+	return n
 }

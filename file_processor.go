@@ -24,6 +24,7 @@ func listenForFilesToWrite() {
 }
 
 func writePNG(fileToWrite FileToWrite) {
+	//log.Printf("[PNG thread %d] Wrtiting %s", getGID(), fileToWrite.dirName + "/" + fileToWrite.fileName)
 
 	// Write to file
 	CreateDirIfNotExist(fileToWrite.dirName)
