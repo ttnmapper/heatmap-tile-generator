@@ -191,10 +191,10 @@ func main() {
 		elapsed = time.Since(start)
 		log.Printf("  Global tile took %s", elapsed)
 
-		start = time.Now()
-		drawPerGatewayTiles(x, y, z, entries)
-		elapsed = time.Since(start)
-		log.Printf("  Gateways tiles took %s", elapsed)
+		//start = time.Now()
+		//drawPerGatewayTiles(x, y, z, entries)
+		//elapsed = time.Since(start)
+		//log.Printf("  Gateways tiles took %s", elapsed)
 
 		start = time.Now()
 		drawGatewayCountTile(x, y, z, entries)
