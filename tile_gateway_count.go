@@ -84,8 +84,9 @@ func drawGatewayCountTile(x int, y int, z int, entries []types.MysqlAggGridcell)
 		}
 	}
 
+	srcImage := dc.Image()
 	tileDirName := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGatewayCount, z, x)
 	tileFileName := fmt.Sprintf("%d.png", y)
-	queueForToWrite <- FileToWrite{tile: dc.Image(), dirName: tileDirName, fileName: tileFileName}
+	queueForToWrite <- FileToWrite{tile: srcImage, dirName: tileDirName, fileName: tileFileName}
 
 }
