@@ -6,10 +6,8 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/j4/gosm"
 	"image"
-	"image/png"
 	"log"
 	"math"
-	"os"
 	"time"
 	"ttnmapper-heatmap-tile-generator/types"
 )
@@ -63,16 +61,9 @@ func drawFogOfWarTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 			tile := blurredImage.SubImage(image.Rect(i*256, j*256, (i+1)*256, (j+1)*256))
 
 			// Write to file
-			tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirFogOfWar, z, x-1+i)
-			CreateDirIfNotExist(tilePath)
-			tilePath = fmt.Sprintf("%s/%d.png", tilePath, y-1+j)
-
-			newImage, _ := os.Create(tilePath)
-			err := png.Encode(newImage, tile)
-			if err != nil {
-				log.Print(err.Error())
-			}
-			_ = newImage.Close()
+			tileDirName := fmt.Sprintf("%s/%d/%d", myConfiguration.DirFogOfWar, z, x-1+i)
+			tileFileName := fmt.Sprintf("%d.png", y-1+j)
+			queueForToWrite <- FileToWrite{tile: tile, dirName: tileDirName, fileName: tileFileName}
 		}
 	}
 }

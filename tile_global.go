@@ -5,10 +5,7 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/j4/gosm"
 	"image"
-	"image/png"
-	"log"
 	"math"
-	"os"
 	"sort"
 	"ttnmapper-heatmap-tile-generator/types"
 )
@@ -124,15 +121,6 @@ func drawGlobalTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 		dc.Fill()
 	}
 
-	//// Write to file
-	//tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x)
-	//CreateDirIfNotExist(tilePath)
-	//tilePath = fmt.Sprintf("%s/%d-full.png", tilePath, y)
-	//err := dc.SavePNG(tilePath)
-	//if err != nil {
-	//	log.Print(err.Error())
-	//}
-
 	srcImage := dc.Image()
 
 	for i := 0; i < 3; i++ {
@@ -142,17 +130,9 @@ func drawGlobalTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 				SubImage(r image.Rectangle) image.Image
 			}).SubImage(image.Rect(i*256, j*256, (i+1)*256, (j+1)*256))
 
-			// Write to file
-			tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x-1+i)
-			CreateDirIfNotExist(tilePath)
-			tilePath = fmt.Sprintf("%s/%d.png", tilePath, y-1+j)
-
-			newImage, _ := os.Create(tilePath)
-			err := png.Encode(newImage, tile)
-			if err != nil {
-				log.Print(err.Error())
-			}
-			_ = newImage.Close()
+			tileDirName := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x-1+i)
+			tileFileName := fmt.Sprintf("%d.png", y-1+j)
+			queueForToWrite <- FileToWrite{tile: tile, dirName: tileDirName, fileName: tileFileName}
 		}
 	}
 

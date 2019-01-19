@@ -27,6 +27,8 @@ type Configuration struct {
 	PromethuesPort string
 
 	SleepDuration string // time to sleep between database calls when there was nothing found to process
+	MinZoomLevel  int
+	MaxZoomLevel  int
 }
 
 var myConfiguration = Configuration{
@@ -44,6 +46,8 @@ var myConfiguration = Configuration{
 	PromethuesPort: "2114",
 
 	SleepDuration: "10s",
+	MinZoomLevel:  1,
+	MaxZoomLevel:  18,
 }
 
 func main() {
@@ -63,6 +67,9 @@ func main() {
 		log.Print(err.Error())
 	}
 	log.Printf("Using configuration: %+v", myConfiguration) // output: [UserA, UserB]
+
+	// Start a thread to handle slow PNG encoding and file writing
+	go listenForFilesToWrite()
 
 	// Set up db connection
 	db, err := sqlx.Open("mysql", myConfiguration.MysqlUser+":"+myConfiguration.MysqlPassword+"@tcp("+myConfiguration.MysqlHost+":"+myConfiguration.MysqlPort+")/"+myConfiguration.MysqlDatabase+"?parseTime=true")
@@ -100,9 +107,14 @@ func main() {
 
 	for {
 
+		tileStart := time.Now()
+
 		tilesToReprocess := []types.MysqlTileToRedraw{}
 		// Give a one minute buffer time
-		err = db.Select(&tilesToReprocess, "SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) ORDER BY last_queued ASC LIMIT 1")
+		err = db.Select(&tilesToReprocess,
+			"SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) AND z>? AND z<? ORDER BY last_queued ASC LIMIT 1",
+			myConfiguration.MinZoomLevel,
+			myConfiguration.MaxZoomLevel)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -156,6 +168,7 @@ func main() {
 		aggCoords := map[string]interface{}{"xNw": tileNW19.X, "yNw": tileNW19.Y, "xSe": tileSE19.X, "ySe": tileSE19.Y}
 
 		var entries = []types.MysqlAggGridcell{}
+		start := time.Now()
 		rows, err := stmtSelectAggData.Queryx(aggCoords)
 		if err != nil {
 			log.Printf(err.Error())
@@ -168,12 +181,14 @@ func main() {
 			}
 			entries = append(entries, entry)
 		}
+		elapsed := time.Since(start)
+		log.Printf("  DB select took %s", elapsed)
 
 		log.Printf(" using %d points", len(entries))
 
-		start := time.Now()
+		start = time.Now()
 		drawGlobalTile(x, y, z, entries)
-		elapsed := time.Since(start)
+		elapsed = time.Since(start)
 		log.Printf("  Global tile took %s", elapsed)
 
 		start = time.Now()
@@ -191,6 +206,8 @@ func main() {
 		elapsed = time.Since(start)
 		log.Printf("  FOW tile took %s", elapsed)
 
+		elapsed = time.Since(tileStart)
+		log.Printf("Tile took %s", elapsed)
 	}
 }
 
