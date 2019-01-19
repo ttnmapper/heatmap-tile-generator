@@ -7,7 +7,6 @@ import (
 	"github.com/j4/gosm"
 	"github.com/jmoiron/sqlx"
 	"log"
-	"math"
 	"os"
 	"time"
 	"ttnmapper-heatmap-tile-generator/types"
@@ -132,15 +131,16 @@ func main() {
 		// Testing tiles
 		//https://ttnmapper.org/tms/index.php?tile=15/18101/19671
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
+		// Road offset example: http://dev.ttnmapper.org/tms/fog_of_war/12/2104/1350.png
 
-		x = 144812
-		y = 157369
-		z = 18
-
-		divisionFactor := 3
-		x /= int(math.Pow(2, float64(divisionFactor)))
-		y /= int(math.Pow(2, float64(divisionFactor)))
-		z -= divisionFactor
+		//x = 144812
+		//y = 157369
+		//z = 18
+		//
+		//divisionFactor := 3
+		//x /= int(math.Pow(2, float64(divisionFactor)))
+		//y /= int(math.Pow(2, float64(divisionFactor)))
+		//z -= divisionFactor
 
 		log.Printf("Generating tile for %d/%d/%d", z, x, y)
 
