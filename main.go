@@ -7,6 +7,7 @@ import (
 	"github.com/j4/gosm"
 	"github.com/jmoiron/sqlx"
 	"log"
+	"math"
 	"os"
 	"time"
 	"ttnmapper-heatmap-tile-generator/types"
@@ -102,7 +103,7 @@ func main() {
 
 		tilesToReprocess := []types.MysqlTileToRedraw{}
 		// Give a one minute buffer time
-		err = db.Select(&tilesToReprocess, "SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) ORDER BY last_queued ASC LIMIT 1")
+		err = db.Select(&tilesToReprocess, "SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) ORDER BY z DESC, last_queued ASC LIMIT 1")
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -132,14 +133,14 @@ func main() {
 		//https://ttnmapper.org/tms/index.php?tile=15/18101/19671
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
 
-		//x = 144812
-		//y = 157369
-		//z = 18
-		//
-		//divisionFactor := 3
-		//x /= int(math.Pow(2, float64(divisionFactor)))
-		//y /= int(math.Pow(2, float64(divisionFactor)))
-		//z -= divisionFactor
+		x = 144812
+		y = 157369
+		z = 18
+
+		divisionFactor := 3
+		x /= int(math.Pow(2, float64(divisionFactor)))
+		y /= int(math.Pow(2, float64(divisionFactor)))
+		z -= divisionFactor
 
 		log.Printf("Generating tile for %d/%d/%d", z, x, y)
 
@@ -170,25 +171,25 @@ func main() {
 
 		log.Printf(" using %d points", len(entries))
 
+		//start := time.Now()
+		//drawGlobalTile(x, y, z, entries)
+		//elapsed := time.Since(start)
+		//log.Printf("  Global tile took %s", elapsed)
+		//
+		//start = time.Now()
+		//drawPerGatewayTiles(x, y, z, entries)
+		//elapsed = time.Since(start)
+		//log.Printf("  Gateways tiles took %s", elapsed)
+
 		start := time.Now()
-		drawGlobalTile(x, y, z, entries)
-		elapsed := time.Since(start)
-		log.Printf("  Global tile took %s", elapsed)
-
-		start = time.Now()
-		drawPerGatewayTiles(x, y, z, entries)
-		elapsed = time.Since(start)
-		log.Printf("  Gateways tiles took %s", elapsed)
-
-		start = time.Now()
 		drawGatewayCountTile(x, y, z, entries)
-		elapsed = time.Since(start)
+		elapsed := time.Since(start)
 		log.Printf("  Gateway count tile took %s", elapsed)
 
-		start = time.Now()
-		drawFogOfWarTile(x, y, z, entries)
-		elapsed = time.Since(start)
-		log.Printf("  FOW tile took %s", elapsed)
+		//start = time.Now()
+		//drawFogOfWarTile(x, y, z, entries)
+		//elapsed = time.Since(start)
+		//log.Printf("  FOW tile took %s", elapsed)
 
 	}
 }
