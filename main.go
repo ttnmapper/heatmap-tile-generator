@@ -103,11 +103,11 @@ func main() {
 	}
 	defer stmtSelectAggData.Close()
 
-	stmtDeleteToProcess, err := db.PrepareNamed("DELETE FROM tiles_to_redraw WHERE id = :id")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer stmtDeleteToProcess.Close()
+	//stmtDeleteToProcess, err := db.PrepareNamed("DELETE FROM tiles_to_redraw WHERE id = :id")
+	//if err != nil {
+	//	panic(err.Error())
+	//}
+	//defer stmtDeleteToProcess.Close()
 
 	sleepDuration, err := time.ParseDuration(myConfiguration.SleepDuration)
 	if err != nil {
@@ -121,7 +121,7 @@ func main() {
 		tilesToReprocess := []types.MysqlTileToRedraw{}
 		// Give a one minute buffer time
 		err = db.Select(&tilesToReprocess,
-			"SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL ? SECOND) AND z>? AND z<? ORDER BY last_queued ASC LIMIT 1",
+			"SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL ? SECOND) AND z>=? AND z<=? ORDER BY last_queued ASC LIMIT 1",
 			myConfiguration.LastQueuedWindow,
 			myConfiguration.MinZoomLevel,
 			myConfiguration.MaxZoomLevel)
@@ -142,7 +142,13 @@ func main() {
 		z := tileToProcess.Z
 
 		// Remove processed tiles from the queue
-		result, err := stmtDeleteToProcess.Exec(tileToProcess)
+		//result, err := stmtDeleteToProcess.Exec(tileToProcess)
+		//if err != nil {
+		//	log.Printf(err.Error())
+		//}
+
+		// Because we redraw the bordering tiles too, remove them from the db if they are queued
+		result, err := db.Exec("DELETE FROM tiles_to_redraw WHERE x>=? AND x<=? AND y>=? AND y<=? AND z=?", x-1, x+1, y-1, y+1, z)
 		if err != nil {
 			log.Printf(err.Error())
 		}
@@ -155,9 +161,9 @@ func main() {
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
 		// Road offset example: http://dev.ttnmapper.org/tms/fog_of_war/12/2104/1350.png
 
-		x = 2104
-		y = 1350
-		z = 12
+		//x = 2104
+		//y = 1350
+		//z = 12
 
 		//divisionFactor := 3
 		//x /= int(math.Pow(2, float64(divisionFactor)))
