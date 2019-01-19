@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/BurntSushi/graphics-go/graphics"
+	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/j4/gosm"
 	"image"
@@ -41,15 +41,19 @@ func drawFogOfWarTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 	dc.Fill()
 
 	srcImage := dc.Image()
-	blurredImage := image.NewRGBA(srcImage.Bounds())
 	// Blur Function
 
 	start := time.Now()
+
 	// Faster if we make the size smaller (default is 6 x stdDev)
-	errBlur := graphics.Blur(blurredImage, srcImage, &graphics.BlurOptions{StdDev: nominalRadius / 2.0, Size: int(nominalRadius)})
-	if errBlur != nil {
-		log.Print(errBlur.Error())
-	}
+	//blurredImage := image.NewRGBA(srcImage.Bounds())
+	//errBlur := graphics.Blur(blurredImage, srcImage, &graphics.BlurOptions{StdDev: nominalRadius / 2.0, Size: int(nominalRadius)})
+	//if errBlur != nil {
+	//	log.Print(errBlur.Error())
+	//}
+
+	blurredImage := imaging.Blur(srcImage, nominalRadius/2.0)
+
 	elapsed := time.Since(start)
 	log.Printf("    blur took %s", elapsed)
 
