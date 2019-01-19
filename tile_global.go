@@ -4,24 +4,27 @@ import (
 	"fmt"
 	"github.com/fogleman/gg"
 	"github.com/j4/gosm"
+	"image"
+	"image/png"
 	"log"
 	"math"
+	"os"
 	"sort"
 	"ttnmapper-heatmap-tile-generator/types"
 )
 
 func drawGlobalTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 
-	tileNW := gosm.NewTileWithXY(x, y, z)
+	// Our origin is one tile left and up, because we process 3x3 tiles
+	tileNW := gosm.NewTileWithXY(x-1, y-1, z)
 	tileNW19 := gosm.NewTileWithLatLong(tileNW.Lat, tileNW.Long, 19)
 
 	pixelsPer19Tile := 256 / (math.Pow(2, float64(19-z)))
-	//if pixelsPer19Tile < 1 {
-	//	log.Printf("Level19 tileNW is less than one pixel")
-	//}
+	minRadius := 3.0
+	nominalRadius := math.Max(minRadius, pixelsPer19Tile)
 
 	// fill in matrix here
-	dc := gg.NewContext(256, 256)
+	dc := gg.NewContext(768, 768)
 
 	points := []types.Point{}
 
@@ -62,8 +65,6 @@ func drawGlobalTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 	})
 
 	for _, entry := range points {
-		minRadius := 3.0
-		nominalRadius := math.Max(minRadius, pixelsPer19Tile)
 
 		pixelX := float64(entry.X-tileNW19.X) * pixelsPer19Tile
 		pixelY := float64(entry.Y-tileNW19.Y) * pixelsPer19Tile
@@ -127,12 +128,36 @@ func drawGlobalTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 		dc.Fill()
 	}
 
-	// Write to file
-	tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x)
-	CreateDirIfNotExist(tilePath)
-	tilePath = fmt.Sprintf("%s/%d.png", tilePath, y)
-	err := dc.SavePNG(tilePath)
-	if err != nil {
-		log.Print(err.Error())
+	//// Write to file
+	//tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x)
+	//CreateDirIfNotExist(tilePath)
+	//tilePath = fmt.Sprintf("%s/%d-full.png", tilePath, y)
+	//err := dc.SavePNG(tilePath)
+	//if err != nil {
+	//	log.Print(err.Error())
+	//}
+
+	srcImage := dc.Image()
+
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			// Crop out tile
+			tile := srcImage.(interface {
+				SubImage(r image.Rectangle) image.Image
+			}).SubImage(image.Rect(i*256, j*256, (i+1)*256, (j+1)*256))
+
+			// Write to file
+			tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGlobalHeatmap, z, x-1+i)
+			CreateDirIfNotExist(tilePath)
+			tilePath = fmt.Sprintf("%s/%d.png", tilePath, y-1+j)
+
+			newImage, _ := os.Create(tilePath)
+			err := png.Encode(newImage, tile)
+			if err != nil {
+				log.Print(err.Error())
+			}
+			_ = newImage.Close()
+		}
 	}
+
 }

@@ -19,11 +19,8 @@ func drawGatewayCountTile(x int, y int, z int, entries []types.MysqlAggGridcell)
 	//	log.Printf("Level19 tileNW is less than one pixel")
 	//}
 
-	// fill in matrix here
-	dc := gg.NewContext(256, 256)
-
+	// Aggregate number of gateways per z19 cell
 	points := make(map[int]map[int]int)
-
 	for _, entry := range entries {
 		if _, ok := points[entry.X]; !ok {
 			points[entry.X] = make(map[int]int)
@@ -34,27 +31,55 @@ func drawGatewayCountTile(x int, y int, z int, entries []types.MysqlAggGridcell)
 		points[entry.X][entry.Y] += 1
 	}
 
+	// z19 cells to pixels
+	blockSize := math.Max(pixelsPer19Tile, 16)
+
+	matrix := make(map[int]map[int]int)
 	for x, _ := range points {
 		for y, _ := range points[x] {
-			minRadius := 16.0
-			nominalRadius := math.Max(minRadius, pixelsPer19Tile)
 
-			pixelX := float64(x-tileNW19.X) * pixelsPer19Tile
-			pixelY := float64(y-tileNW19.Y) * pixelsPer19Tile
+			pointX := float64(x-tileNW19.X) * pixelsPer19Tile
+			pointY := float64(y-tileNW19.Y) * pixelsPer19Tile
 
-			dc.DrawRectangle(pixelX, pixelY, nominalRadius, nominalRadius)
+			if pointX < 0 || pointX > 255 || pointY < 0 || pointY > 255 {
+				continue
+			}
 
-			switch points[x][y] {
+			blockX := int(pointX / blockSize)
+			blockY := int(pointY / blockSize)
+
+			if _, ok := matrix[blockX]; !ok {
+				matrix[blockX] = make(map[int]int)
+			}
+			if _, ok := matrix[blockX][blockY]; !ok {
+				matrix[blockX][blockY] = 0
+			}
+
+			if matrix[blockX][blockY] < points[x][y] {
+				matrix[blockX][blockY] = points[x][y]
+			}
+
+		}
+	}
+
+	dc := gg.NewContext(256, 256)
+
+	for x, _ := range matrix {
+		for y, _ := range matrix[x] {
+
+			dc.DrawRectangle(float64(x)*blockSize, float64(y)*blockSize, blockSize, blockSize)
+
+			switch matrix[x][y] {
 			case 0:
-				dc.SetRGB(0, 0, 0)
+				dc.SetRGBA(0, 0, 0, 0)
 			case 1:
-				dc.SetRGB255(255, 255, 212)
+				dc.SetRGB(0, 0, 1)
 			case 2:
-				dc.SetRGB255(254, 217, 142)
+				dc.SetRGB(0, 0.5, 0)
 			case 3:
-				dc.SetRGB255(254, 153, 41)
+				dc.SetRGB(1, 0.5, 0)
 			default:
-				dc.SetRGB255(204, 76, 2)
+				dc.SetRGB(1, 0, 0)
 			}
 			dc.Fill()
 		}
@@ -68,4 +93,27 @@ func drawGatewayCountTile(x int, y int, z int, entries []types.MysqlAggGridcell)
 	if err != nil {
 		log.Print(err.Error())
 	}
+
+	//srcImage := dc.Image()
+	//
+	//for i := 0; i<3; i++ {
+	//	for j := 0; j<3; j++ {
+	//		// Crop out tile
+	//		tile := srcImage.(interface {
+	//			SubImage(r image.Rectangle) image.Image
+	//		}).SubImage(image.Rect(i*256, j*256, (i+1)*256, (j+1)*256))
+	//
+	//		// Write to file
+	//		tilePath := fmt.Sprintf("%s/%d/%d", myConfiguration.DirGatewayCount, z, x-1+i)
+	//		CreateDirIfNotExist(tilePath)
+	//		tilePath = fmt.Sprintf("%s/%d.png", tilePath, y-1+j)
+	//
+	//		newImage, _ := os.Create(tilePath)
+	//		err := png.Encode(newImage, tile)
+	//		if err != nil {
+	//			log.Print(err.Error())
+	//		}
+	//		_ = newImage.Close()
+	//	}
+	//}
 }

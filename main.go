@@ -143,9 +143,9 @@ func main() {
 
 		log.Printf("Generating tile for %d/%d/%d", z, x, y)
 
-		// Select data for 9 tile to cover att boundary cases
-		tileNWpad := gosm.NewTileWithXY(x-1, y-1, z)
-		tileSEpad := gosm.NewTileWithXY(x+2, y+2, z)
+		// Select data for 25 tiles. We draw 9 tiles and have one tile as padding for boundary cases.
+		tileNWpad := gosm.NewTileWithXY(x-2, y-2, z)
+		tileSEpad := gosm.NewTileWithXY(x+3, y+3, z)
 
 		// For the tileNW we need to reprocess, find all z-19 tiles that falls inside it
 		tileNW19 := gosm.NewTileWithLatLong(tileNWpad.Lat, tileNWpad.Long, 19)
