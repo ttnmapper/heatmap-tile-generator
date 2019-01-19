@@ -102,7 +102,7 @@ func main() {
 
 		tilesToReprocess := []types.MysqlTileToRedraw{}
 		// Give a one minute buffer time
-		err = db.Select(&tilesToReprocess, "SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) ORDER BY z DESC, last_queued ASC LIMIT 1")
+		err = db.Select(&tilesToReprocess, "SELECT * FROM tiles_to_redraw WHERE `last_queued` < (NOW() - INTERVAL 1 MINUTE) ORDER BY last_queued ASC LIMIT 1")
 		if err != nil {
 			fmt.Println(err)
 			return
