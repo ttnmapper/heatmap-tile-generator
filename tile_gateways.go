@@ -70,10 +70,6 @@ func drawPerGatewayTiles(x int, y int, z int, entries []types.MysqlAggGridcell) 
 		pixelX := float64(entry.X-tileNW19.X) * pixelsPer19Tile
 		pixelY := float64(entry.Y-tileNW19.Y) * pixelsPer19Tile
 
-		// Move to centre of circle
-		pixelX += (nominalRadius / 2)
-		pixelY += (nominalRadius / 2)
-
 		if _, ok := images[entry.GtwId]; !ok {
 			dc := gg.NewContext(768, 768)
 			images[entry.GtwId] = dc
