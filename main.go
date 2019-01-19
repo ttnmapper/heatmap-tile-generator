@@ -53,7 +53,7 @@ var myConfiguration = Configuration{
 	SleepDuration:     "10s",
 	LastQueuedWindow:  1,
 	MinZoomLevel:      1,
-	MaxZoomLevel:      18,
+	MaxZoomLevel:      19,
 	FileWriterThreads: 4,
 }
 
