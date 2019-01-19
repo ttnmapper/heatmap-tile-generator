@@ -50,7 +50,9 @@ func drawFogOfWarTile(x int, y int, z int, entries []types.MysqlAggGridcell) {
 	//	log.Print(errBlur.Error())
 	//}
 
-	blurredImage := imaging.Blur(srcImage, nominalRadius/2.0)
+	log.Printf("    blur radius min(%f, 5)", nominalRadius/2.0)
+	blurRadius := math.Min(nominalRadius/2.0, 5)
+	blurredImage := imaging.Blur(srcImage, blurRadius)
 
 	elapsed := time.Since(start)
 	log.Printf("    blur took %s", elapsed)
