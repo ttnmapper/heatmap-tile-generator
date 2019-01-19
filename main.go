@@ -145,10 +145,10 @@ func main() {
 		//https://ttnmapper.org/tms/index.php?tile=18/144812/157369
 		// Road offset example: http://dev.ttnmapper.org/tms/fog_of_war/12/2104/1350.png
 
-		//x = 144812
-		//y = 157369
-		//z = 18
-		//
+		x = 2104
+		y = 1350
+		z = 12
+
 		//divisionFactor := 3
 		//x /= int(math.Pow(2, float64(divisionFactor)))
 		//y /= int(math.Pow(2, float64(divisionFactor)))
